@@ -1,2 +1,13 @@
 venv/*
 .idea
+
+# except the explaining README
+
+run/*
+!run/README.md
+!run/static
+!run/media
+run/static/*
+run/media/*
+!run/static/README.md
+!run/media/README.md
