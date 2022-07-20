@@ -1,1 +1,2 @@
 Django
+social-auth-app-django
