@@ -17,5 +17,5 @@ if os.path.exists(ENV_PATH):
             val = line[sep + 1 :].strip()
             os.environ[key] = val
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 DEBUG = True

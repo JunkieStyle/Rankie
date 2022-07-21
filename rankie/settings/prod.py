@@ -112,7 +112,7 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIAL_AUTH_TELEGRAM_BOT_TOKEN = os.environ.get("SOCIAL_AUTH_TELEGRAM_BOT_TOKEN")
 
-LOGIN_REDIRECT_URL = "/ricardo"
+LOGIN_REDIRECT_URL = "/"
 
 
 # Internationalization
@@ -131,7 +131,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATIC_ROOT = RUN_DIR / "static"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 

@@ -1,13 +1,42 @@
-<!DOCTYPE html>
+{% load static %}
 
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>New page</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Serif&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap"/>
 </head>
 <body>
-<script async src="https://telegram.org/js/telegram-widget.js?19" data-telegram-login="RankieBot" data-size="small"
-        data-auth-url="{% url 'social:complete' 'telegram'%}"
-        data-request-access="write"></script>
+<div class="pg-empty-placeholder"
+     style="width: 640px; left: 50%; margin-left: -320px; position: absolute; height: 100%;"></div>
+<div style="position: relative; height: 192px; width: 264px; min-height: 192px; max-height: 192px; margin-left: -132px; left: 50%; top: 100px;">
+    <img src="{% static 'hello_corgi.gif' %}" style="height: 100%;"/>
+</div>
+<div style="background-color: #aed0f9; position: relative; left: 50%; width: 300px; height: 144px; border-width: 5px; border-top-color: #000000; border-bottom-color: #000000; border-right-color: #000000; border-style: solid; border-top-right-radius: 30px; border-bottom-right-radius: 30px; border-top-left-radius: 30px; text-align: left; color: #000000; resize: none; margin-left: -150px; min-height: 125px; top: 100px;">
+    <br/>
+    <p style="margin-left: 20px; margin-right: 10px; margin-top: -1px; font-family: 'Roboto', sans-serif; font-size: 25px;">
+        Hello{% if request.user.is_authenticated %}, {{ user.username }}{% endif %}!
+        <br>
+        My name is <b>Rankie!</b>
+    </p>
+
+        {% if request.user.is_authenticated %}
+        <p style="margin-left: 20px; margin-right: 10px; margin-top: -1px; font-family: 'Roboto', sans-serif; font-size: 25px;"> I am no ready yet 😢</p>
+        {% else %}
+        <div style="margin-left:20px">
+            <script async src="https://telegram.org/js/telegram-widget.js?19" data-telegram-login="RankieBot"
+                    data-size="medium"
+                    data-auth-url="{% url 'social:complete' 'telegram' %}"
+                    data-request-access="write">
+            </script>
+        </div>
+        {% endif %}
+    </div>
+</div>
 </body>
 </html>
