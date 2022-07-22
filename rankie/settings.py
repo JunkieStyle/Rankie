@@ -153,5 +153,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# SECURE_REFERRER_POLICY = "unsafe-url"
-SECURE_CROSS_ORIGIN_OPENER_POLICY = "unsafe-none"
+
+# Telegram auth does not work without it
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
