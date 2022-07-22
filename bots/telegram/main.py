@@ -38,13 +38,20 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     data = {"user": username, "game": game_label, "round": game_round, "origin": "TG_BOT", "text": message}
     response = requests.post(RANKIE_GAME_RESULTS_URL, json=data)
+
     if response.status_code == 201:
         await context.bot.send_message(
             chat_id=chat_id, text=f"Result successfully registered, game '{game_label}', round {game_round}"
         )
     else:
         logger.error(f"Status code: {response.status_code}, Text: {response.text}")
-        await context.bot.send_message(chat_id=chat_id, text=f"Failed result registration for game '{game_label}'")
+        reason = "API error"
+        if response.text and "must make a unique set" in response.text:
+            reason = "already registered"
+
+        await context.bot.send_message(
+            chat_id=chat_id, text=f"Failed to register result for game '{game_label}': {reason}"
+        )
 
 
 def main():
