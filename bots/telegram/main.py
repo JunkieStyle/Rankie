@@ -40,7 +40,7 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = requests.post(RANKIE_GAME_RESULTS_URL, json=data)
     if response.status_code == 201:
         await context.bot.send_message(
-            chat_id=chat_id, text=f"Result successfully registered, game '{game_label}, round {game_label}"
+            chat_id=chat_id, text=f"Result successfully registered, game '{game_label}', round {game_round}"
         )
     else:
         logger.error(f"Status code: {response.status_code}, Text: {response.text}")
