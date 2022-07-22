@@ -30,7 +30,7 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = update.message.from_user.username
 
     if message.startswith("Wordle"):
-        game_label = "wordle"
+        game_label = "wordle_eng"
         game_round = int(message.split()[1])
     else:
         await context.bot.send_message(chat_id=chat_id, text="Sorry, I can't guess the game name")
@@ -43,6 +43,7 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=chat_id, text=f"Result successfully registered, game '{game_label}, round {game_label}"
         )
     else:
+        logger.error(f"Status code: {response.status_code}, Text: {response.text}")
         await context.bot.send_message(chat_id=chat_id, text=f"Failed result registration for game '{game_label}'")
 
 
