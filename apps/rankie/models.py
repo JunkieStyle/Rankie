@@ -15,6 +15,9 @@ class Game(models.Model):
         verbose_name = _("Game")
         verbose_name_plural = _("Games")
 
+    def __str__(self):
+        return self.name
+
 
 class GameResult(models.Model):
     class ORIGIN(models.TextChoices):
@@ -25,9 +28,11 @@ class GameResult(models.Model):
     origin = models.CharField(max_length=32, choices=ORIGIN.choices, null=False, blank=False)
     text = models.TextField(null=False)
     game = models.ForeignKey(to=Game, on_delete=models.CASCADE, null=False)
+    round = models.PositiveIntegerField()
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "game_result"
+        unique_together = ("user", "game", "round")
         verbose_name = _("Game result")
         verbose_name_plural = _("Games results")
