@@ -4,7 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Game(models.Model):
-    name = models.CharField(max_length=32)
+    label = models.SlugField(max_length=32, unique=True)
+    name = models.CharField(max_length=128)
     url = models.URLField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

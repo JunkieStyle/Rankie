@@ -25,7 +25,7 @@ def game_results(db, user, game):
 def test_post_game_result(api_client, user, game):
     url = reverse("api_internal:gameresults-list")
     data = {
-        "game": game.name,
+        "game": game.label,
         "user": user.username,
         "origin": GameResult.ORIGIN.CUSTOM,
         "text": """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
