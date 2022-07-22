@@ -41,7 +41,7 @@ else:
     ALLOWED_HOSTS = ["rankie-web.herokuapp.com"]
     SECURE_SSL_REDIRECT = True
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # Telegram auth does not work without it
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.auth.apps.AuthConfig",
     "social_django",
+    "apps.rankie.apps.RankieConfig",
 ]
 
 MIDDLEWARE = [
