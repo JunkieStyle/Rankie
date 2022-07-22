@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 class Game(models.Model):
     name = models.CharField(max_length=32)
     url = models.URLField()
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "game"
@@ -22,6 +24,7 @@ class GameResult(models.Model):
     origin = models.CharField(max_length=32, choices=ORIGIN.choices, null=False, blank=False)
     text = models.TextField(null=False)
     game = models.ForeignKey(to=Game, on_delete=models.CASCADE, null=False)
+    created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "game_result"
