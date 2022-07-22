@@ -23,7 +23,7 @@ if os.path.exists(ENV_PATH):
         for line in f.readlines():
             sep = line.find("=")
             key = line[:sep].strip()
-            val = line[sep + 1:].strip()
+            val = line[sep + 1 :].strip()
             os.environ[key] = val
 
 # Turn it on for local development
@@ -88,13 +88,13 @@ WSGI_APPLICATION = "rankie.wsgi.application"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get("DB_ENGINE"),
-        'NAME': os.environ.get("DB_NAME"),
-        'USER': os.environ.get("DB_USER"),
-        'PASSWORD': os.environ.get("DB_PASSWORD"),
-        'HOST': os.environ.get("HOST"),
-        'PORT': os.environ.get("PORT")
+    "default": {
+        "ENGINE": os.environ.get("DB_ENGINE"),
+        "NAME": os.environ.get("DB_NAME"),
+        "USER": os.environ.get("DB_USER"),
+        "PASSWORD": os.environ.get("DB_PASSWORD"),
+        "HOST": os.environ.get("HOST"),
+        "PORT": os.environ.get("PORT"),
     }
 }
 
