@@ -7,7 +7,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, MessageHandler, ApplicationBuilder, filters
 
 PORT = int(os.environ["PORT"])
-BOT_TOKEN = os.environ["TOKEN"]
+BOT_TOKEN = os.environ["BOT_TOKEN"]
 APPNAME = os.environ["APPNAME"]
 RANKIE_GAME_RESULTS_URL = os.environ.get("RANKIE_GAME_RESULTS_URL")
 
