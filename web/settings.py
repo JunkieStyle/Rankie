@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.auth.apps.AuthConfig",
     "social_django",
     "apps.rankie.apps.RankieConfig",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
