@@ -12,7 +12,7 @@ class GameAdmin(admin.ModelAdmin):
 
 @admin.register(GameResult)
 class GameResultAdmin(admin.ModelAdmin):
-    list_display = ("get_username", "get_game_label", "created")
+    list_display = ("get_game_label", "get_game_round", "get_username", "created")
     date_hierarchy = "created"
 
     @display(ordering="user__username", description="User")
@@ -22,3 +22,7 @@ class GameResultAdmin(admin.ModelAdmin):
     @display(ordering="game__label", description="Game")
     def get_game_label(self, obj):
         return obj.game.label
+
+    @display(ordering="game__round", description="Round")
+    def get_game_round(self, obj):
+        return obj.game.round
