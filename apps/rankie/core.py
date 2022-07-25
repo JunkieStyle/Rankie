@@ -49,6 +49,7 @@ def register_game_result(game_result: GameResult):
     active_leagues = get_league_queryset_for_standings_update(player, game)
 
     standings_to_update = []
+    rounds_to_update = []
 
     with transaction.atomic():
         # Dict with model classes as keys and lists of instances as values
@@ -91,7 +92,7 @@ def register_game_result(game_result: GameResult):
                 # This league is updated
                 continue
 
-            # Change mvp condition
+            # Mvp condition
             # Current round other results must be sorted in queryset
             mvp_needs_change = (
                 player != curr_round.mvp
@@ -99,36 +100,33 @@ def register_game_result(game_result: GameResult):
                 and curr_round_result.score > curr_round_other_results[0].score
             )
 
-            old_mvp = None
-            if mvp_needs_change:
-                old_mvp = curr_round.mvp
-                curr_round.mvp = player
-                curr_round.save()
-
             # Change standings
             # Assume standings are sorted and filtered in queryset (all have scores or from current player)
             curr_rank = 1
+            prev_rank = len(league.fetched_standings)
             curr_standing_score = scorer.get_standing_score(other_rounds_results + [curr_round_result])
 
-            for standing in league.fetched_standings:
+            for rank, standing in enumerate(league.fetched_standings, 1):
                 need_update = False
 
                 if standing.player == player:
+                    if standing.rank:
+                        prev_rank = rank
                     # Assume other_rounds_results are sorted by round label in queryset
                     standing.score = curr_standing_score
                     standing.rank = curr_rank
-                    if mvp_needs_change or (standing.mvp_count == 0 and curr_round.mvp == player):
+                    if mvp_needs_change or curr_round.pk is None:
                         standing.mvp_count += 1
                     need_update = True
 
-                elif curr_standing_score > standing.score:
+                elif curr_standing_score > standing.score and (curr_round <= standing.rank < prev_rank):
                     standing.rank += 1
                     need_update = True
                 else:
-                    curr_rank -= 1
+                    curr_rank += 1
 
-                # old mvp standing
-                if mvp_needs_change and standing.player == old_mvp:
+                # Old mvp standing
+                if mvp_needs_change and standing.player == curr_round.mvp:
                     standing.mvp_count -= 1
                     need_update = True
 
@@ -136,7 +134,15 @@ def register_game_result(game_result: GameResult):
                     standing.updated = timezone.now()
                     standings_to_update.append(standing)
 
+            # Updating mvp
+            if mvp_needs_change:
+                curr_round.mvp = player
+                curr_round.updated = timezone.now()
+                rounds_to_update.append(curr_round)
+
+        # Perform bulk db operations
         for model_class, objects in objects_to_create.items():
             model_class.objects.bulk_create(objects)
 
+        Round.objects.bulk_update(rounds_to_update, ["mvp"])
         Standing.objects.bulk_update(standings_to_update, ["updated", "mvp_count", "rank", "score"])
