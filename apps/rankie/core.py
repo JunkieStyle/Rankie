@@ -99,36 +99,37 @@ def register_game_result(game_result: GameResult):
                 and curr_round_result.score > curr_round_other_results[0].score
             )
 
+            old_mvp = None
+            if mvp_needs_change:
+                old_mvp = curr_round.mvp
+                curr_round.mvp = player
+                curr_round.save()
+
             # Change standings
             # Assume standings are sorted and filtered in queryset (all have scores or from current player)
-            # Current standing will be last if curr_round_result is not saved
-            curr_rank = len(league.fetched_standings)
+            curr_rank = 1
             curr_standing_score = scorer.get_standing_score(other_rounds_results + [curr_round_result])
 
             for standing in league.fetched_standings:
                 need_update = False
 
-                if standing.score and curr_standing_score > standing.score:
-                    standing.rank += 1
-                    curr_rank -= 1
-                    need_update = True
-
-                # old mvp standing
-                if mvp_needs_change and curr_round.mvp == standing.player:
-                    standing.mvp_count -= 1
-                    need_update = True
-
-                    # update round mvp after standings change:
-                    curr_round.mvp = player
-                    curr_round.save()
-
-                # curr_standing is always last because of null score
                 if standing.player == player:
                     # Assume other_rounds_results are sorted by round label in queryset
                     standing.score = curr_standing_score
                     standing.rank = curr_rank
                     if mvp_needs_change or (standing.mvp_count == 0 and curr_round.mvp == player):
                         standing.mvp_count += 1
+                    need_update = True
+
+                elif curr_standing_score > standing.score:
+                    standing.rank += 1
+                    need_update = True
+                else:
+                    curr_rank -= 1
+
+                # old mvp standing
+                if mvp_needs_change and standing.player == old_mvp:
+                    standing.mvp_count -= 1
                     need_update = True
 
                 if need_update:
