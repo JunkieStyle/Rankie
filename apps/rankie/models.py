@@ -1,10 +1,10 @@
-from pydoc import locate
-
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+
+User = get_user_model()
 
 
 class Game(models.Model):
@@ -25,9 +25,9 @@ class Game(models.Model):
 
 class GameRule(models.Model):
     name = models.CharField(max_length=128)
-    game = models.ForeignKey(to=Game, on_delete=models.CASCADE, related_name="rules")
-    python_class = models.CharField(max_length=256)
-    greater_is_better = models.BooleanField(default=True)
+    game = models.ForeignKey(to=Game, on_delete=models.CASCADE)
+    py_class = models.CharField(max_length=256)
+    py_kwargs = models.JSONField(default={})  # TODO: add validation for only dicts
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -36,12 +36,10 @@ class GameRule(models.Model):
         verbose_name = _("Game rule")
         verbose_name_plural = _("Game rules")
         unique_together = ("game", "name")
+        default_related_name = "rules"
 
     def __str__(self):
         return self.name
-
-    def get_scorer(self):
-        return locate(self.python_class)()  # noqa
 
 
 class GameResult(models.Model):
@@ -49,25 +47,18 @@ class GameResult(models.Model):
         TG_BOT = "TG_BOT", _("Telegram Bot")
         CUSTOM = "CUSTOM", _("Custom")
 
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, null=False, related_name="results")
+    player = models.ForeignKey(to=User, on_delete=models.CASCADE, null=False)
     origin = models.CharField(max_length=32, choices=ORIGIN.choices, null=False, blank=False)
     text = models.TextField(null=False)
-    game = models.ForeignKey(to=Game, on_delete=models.CASCADE, null=False, related_name="results")
-    round = models.PositiveIntegerField()
+    game = models.ForeignKey(to=Game, on_delete=models.CASCADE, null=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "game_result"
-        unique_together = ("user", "game", "round")
         verbose_name = _("Game result")
         verbose_name_plural = _("Games results")
-
-    def is_active(self, league: "League") -> bool:
-        return (
-            league.is_active()
-            and self.created >= league.start_dt
-            and (league.end_dt is None or league.end_dt > self.created)
-        )
+        unique_together = ("player", "game", "text")
+        default_related_name = "game_results"
 
 
 class LeagueQuerySet(models.QuerySet):
@@ -86,9 +77,9 @@ class LeagueQuerySet(models.QuerySet):
 class League(models.Model):
     label = models.SlugField(max_length=32, unique=True)
     name = models.CharField(max_length=256, unique=True)
-    owner = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
-    rule = models.ForeignKey(to=GameRule, on_delete=models.CASCADE, related_name="leagues")
-    players = models.ManyToManyField(to=get_user_model(), through="Score", related_name="leagues")
+    owner = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="owned_leagues")
+    rule = models.ForeignKey(to=GameRule, on_delete=models.CASCADE)
+    players = models.ManyToManyField(to=User, through="Standing")
     start_dt = models.DateTimeField()
     end_dt = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -100,6 +91,7 @@ class League(models.Model):
         db_table = "league"
         verbose_name = _("League")
         verbose_name_plural = _("Leagues")
+        default_related_name = "leagues"
 
     def __str__(self):
         return self.name
@@ -109,22 +101,52 @@ class League(models.Model):
             return self.start_dt <= timezone.now() < self.end_dt
         return self.start_dt <= timezone.now()
 
-    def get_scorer(self):
-        return self.rule.get_scorer()
+
+class Round(models.Model):
+    label = models.CharField(max_length=128)
+    league = models.ForeignKey(to=League, on_delete=models.CASCADE)
+    description = models.TextField(null=True, blank=True)
+    mvp = models.ForeignKey(to=User, on_delete=models.SET_NULL, default=None, null=True, blank=True)
+
+    class Meta:
+        db_table = "round"
+        verbose_name = _("Round")
+        verbose_name_plural = _("Rounds")
+        unique_together = ("label", "league")
+        default_related_name = "rounds"
+
+    def __str__(self):
+        return f"Round {self.label}"
 
 
-class Score(models.Model):
-    league = models.ForeignKey(to=League, on_delete=models.CASCADE, related_name="scores")
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="scores")
-    value = models.FloatField(null=True, blank=True)
+class RoundResult(models.Model):
+    round = models.ForeignKey(to=Round, on_delete=models.CASCADE)
+    player = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    score = models.FloatField()
+    raw = models.ForeignKey(to=GameResult, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("user", "league")
-        db_table = "score"
-        verbose_name = _("Score")
-        verbose_name_plural = _("Scores")
+        db_table = "round_result"
+        verbose_name = _("Round result")
+        verbose_name_plural = _("Rounds results")
+        unique_together = ("round", "player")
+        default_related_name = "round_results"
 
-    def get_scorer(self):
-        return self.league.get_scorer()
+
+class Standing(models.Model):
+    league = models.ForeignKey(to=League, on_delete=models.CASCADE)
+    rank = models.PositiveIntegerField(null=True, blank=True)
+    player = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    score = models.FloatField(null=True, blank=True)
+    mvp_count = models.IntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "standing"
+        verbose_name = _("Standing")
+        verbose_name_plural = _("Standings")
+        unique_together = ("player", "league")
+        default_related_name = "standings"

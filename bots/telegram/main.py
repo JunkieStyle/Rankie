@@ -31,18 +31,15 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if message.startswith("Wordle"):
         game_label = "wordle_eng"
-        game_round = int(message.split()[1])
     else:
         await context.bot.send_message(chat_id=chat_id, text="Sorry, I can't guess the game name")
         return
 
-    data = {"user": username, "game": game_label, "round": game_round, "origin": "TG_BOT", "text": message}
+    data = {"player": username, "game": game_label, "origin": "TG_BOT", "text": message}
     response = requests.post(RANKIE_GAME_RESULTS_URL, json=data)
 
     if response.status_code == 201:
-        await context.bot.send_message(
-            chat_id=chat_id, text=f"Result successfully registered, game '{game_label}', round {game_round}"
-        )
+        await context.bot.send_message(chat_id=chat_id, text=f"Result successfully sent, game '{game_label}'")
     else:
         logger.error(f"Status code: {response.status_code}, Text: {response.text}")
         reason = "API error"

@@ -6,7 +6,7 @@ from django.utils import timezone
 from model_bakery import baker
 from django.contrib.auth import get_user_model
 
-from apps.rankie.models import Score, League
+from apps.rankie.models import League, Standing
 
 User = get_user_model()
 
@@ -33,7 +33,7 @@ def test_league_active_manager_related(db, leagues):
     user_1 = baker.make(User)
     user_2 = baker.make(User)
     for league, user in zip(leagues, [user_1, user_2, user_1, user_2]):
-        baker.make(Score, league=league, user=user)
+        baker.make(Standing, league=league, player=user)
     assert user_1.leagues.inactive().count() == 1
     assert user_1.leagues.active().count() == 1
 
