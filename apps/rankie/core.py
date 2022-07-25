@@ -91,7 +91,7 @@ def register_game_result(game_result: GameResult):
                 # This league is updated
                 continue
 
-            # Change mvp сondition
+            # Change mvp condition
             # Current round other results must be sorted in queryset
             mvp_needs_change = (
                 player != curr_round.mvp
