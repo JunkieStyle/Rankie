@@ -37,8 +37,8 @@ class BaseScorer(ABC):
         raise NotImplementedError
 
     def get_round_label(self, result: GameResult) -> int:
-        match = re.search(self.pattern, result.text)
-        return match.group()
+        match = self.pattern.search(result.text)
+        return match.groups()[0]
 
 
 class ConstantLinearScorer(BaseScorer):
