@@ -127,7 +127,7 @@ def register_game_result(game_result: GameResult):
                     # Assume other_rounds_results are sorted by round label in queryset
                     standing.score = curr_standing_score
                     standing.rank = curr_rank
-                    if mvp_needs_change:
+                    if mvp_needs_change or (standing.mvp_count == 0 and curr_round.mvp == player):
                         standing.mvp_count += 1
                     need_update = True
 
