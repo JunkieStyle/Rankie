@@ -119,7 +119,7 @@ def register_game_result(game_result: GameResult):
                         standing.mvp_count += 1
                     need_update = True
 
-                elif curr_standing_score > standing.score and (curr_round <= standing.rank < prev_rank):
+                elif curr_standing_score > standing.score and (curr_rank <= standing.rank < prev_rank):
                     standing.rank += 1
                     need_update = True
                 else:
