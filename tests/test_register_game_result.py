@@ -45,7 +45,7 @@ def test_get_league_queryset_for_standings_update(django_user_model, db, django_
 
 def test_standing_on_adding_player(db, django_user_model, league):
     player = baker.make(django_user_model)
-    assert not Standing.objects.filter(player=player, league=league).exist()
+    assert not Standing.objects.filter(player=player, league=league).exists()
 
     league.players.add(player)
     league.save()
@@ -95,16 +95,16 @@ def test_register_single_player_multi_results(db, django_user_model, league):
     league.players.add(player)
     league.save()
 
-    round_label1 = ("1",)
-    game_result1 = baker.make(GameResult, player=player, game=league.game, text=round_label1)
+    round_label1 = "1"
+    game_result1 = baker.make(GameResult, player=player, game=league.rule.game, text=round_label1)
     register_game_result(game_result1)
 
-    round_label2 = ("2",)
-    game_result2 = baker.make(GameResult, player=player, game=league.game, text=round_label2)
+    round_label2 = "2"
+    game_result2 = baker.make(GameResult, player=player, game=league.rule.game, text=round_label2)
     register_game_result(game_result2)
 
     standing = Standing.objects.get(player=player, league=league)
-    assert standing.score == RoundResult.objects.filter(player=player, round__league=league).sum()
+    assert standing.score == 2
     assert standing.mvp_count == 2
 
 
