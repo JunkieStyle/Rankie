@@ -38,6 +38,7 @@ def test_get_league_queryset_for_standings_update(django_user_model, db, django_
         assert len(active_leagues) == 2
         for league in active_leagues:
             assert len(league.fetched_rounds) == 5
+            assert len(league.fetched_standings) == 1
             for round in league.fetched_rounds:
                 assert len(round.fetched_round_results) == 2
 
@@ -129,8 +130,29 @@ def test_register_multi_player_single_results(db, django_user_model, league):
     assert standing2.mvp_count == 0
 
 
-def test_register_multi_player_multi_results(db, django_user_model, league):
+def test_register_same_score_diff_rounds(db, django_user_model, league):
+    players = [baker.make(django_user_model, id=i) for i in range(0, 4)]
+    league.players.add(*players)
 
+    round_labels = [str(i) for i in range(0, 4)]
+    game_results = [
+        baker.make(GameResult, player=player, game=league.rule.game, text=round_label)
+        for round_label, player in zip(round_labels, players)
+    ]
+
+    for game_result in game_results:
+        register_game_result(game_result)
+
+    data = Standing.objects.filter(league=league).order_by("rank").values("rank", "player", "score", "mvp_count")
+    assert list(data) == [
+        {"rank": 1, "player": 0, "score": 1.0, "mvp_count": 1},
+        {"rank": 2, "player": 1, "score": 1.0, "mvp_count": 1},
+        {"rank": 3, "player": 2, "score": 1.0, "mvp_count": 1},
+        {"rank": 4, "player": 3, "score": 1.0, "mvp_count": 1},
+    ]
+
+
+def test_register_multi_player_multi_results(db, django_user_model, league):
     players = [baker.make(django_user_model, id=i) for i in range(0, 4)]
     league.players.add(*players)
 
