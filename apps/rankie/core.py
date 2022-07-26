@@ -1,4 +1,4 @@
-from collections import defaultdict
+# from collections import defaultdict
 
 from django.db import transaction
 from django.utils import timezone
@@ -52,8 +52,10 @@ def register_game_result(game_result: GameResult):
     rounds_to_update = []
 
     with transaction.atomic():
-        # Dict with model classes as keys and lists of instances as values
-        objects_to_create = defaultdict(list)
+        # # Dict with model classes as keys and lists of instances as values
+        # objects_to_create = defaultdict(list)
+        rounds_to_create = []
+        round_results_to_create = []
 
         for league in active_leagues:
             scorer = get_scorer(league)
@@ -81,13 +83,16 @@ def register_game_result(game_result: GameResult):
 
             if curr_round is None:
                 curr_round = Round(league=league, label=round_label, mvp=player)
-                objects_to_create[Round].append(curr_round)
+                # objects_to_create[Round].append(curr_round)
+                rounds_to_create.append(curr_round)
 
             if curr_round_result is None:
                 curr_round_result = RoundResult(
                     round=curr_round, player=player, score=scorer.get_round_score(game_result), raw=game_result
                 )
-                objects_to_create[RoundResult].append(curr_round_result)
+                # objects_to_create[RoundResult].append(curr_round_result)
+                round_results_to_create.append(curr_round_result)
+
             else:
                 # This league is updated
                 continue
@@ -141,8 +146,10 @@ def register_game_result(game_result: GameResult):
                 rounds_to_update.append(curr_round)
 
         # Perform bulk db operations
-        for model_class, objects in objects_to_create.items():
-            model_class.objects.bulk_create(objects)
+        # for model_class, objects in objects_to_create.items():
+        #     model_class.objects.bulk_create(objects)
+        Round.objects.bulk_create(rounds_to_create)
+        RoundResult.objects.bulk_create(round_results_to_create)
 
         Round.objects.bulk_update(rounds_to_update, ["mvp"])
         Standing.objects.bulk_update(standings_to_update, ["updated", "mvp_count", "rank", "score"])
