@@ -1,3 +1,5 @@
+import logging
+
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q, Prefetch, QuerySet
@@ -7,6 +9,7 @@ from .models import Game, Round, League, Standing, GameResult, RoundResult
 from .scorers import get_scorer
 
 User = get_user_model()
+logger = logging.getLogger()
 
 
 def get_league_queryset_for_standings_update(player: User, game: Game) -> QuerySet[League]:
@@ -102,24 +105,40 @@ def register_game_result(game_result: GameResult):
             prev_rank = len(league.fetched_standings)
             curr_standing_score = scorer.get_standing_score(other_rounds_results + [curr_round_result])
 
+            print("ROUND")
+            print(curr_round)
+            print(prev_rank)
+
             for rank, standing in enumerate(league.fetched_standings, 1):
                 need_update = False
+                print("START")
+                print(rank)
+                print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
 
                 if standing.player == player:
+                    print("PLAYER")
                     if standing.rank:
                         prev_rank = rank
+                    print(prev_rank)
                     # Assume other_rounds_results are sorted by round label in queryset
                     standing.score = curr_standing_score
                     standing.rank = curr_rank
+                    print(standing.rank)
+                    print(mvp_needs_change)
                     if mvp_needs_change or curr_round.pk is None:
                         standing.mvp_count += 1
                         curr_round.save()
                     need_update = True
+                    print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
+                    print(curr_round.mvp)
 
                 elif curr_standing_score > standing.score and (curr_rank <= standing.rank < prev_rank):
+                    print("BETTER")
                     standing.rank += 1
+                    print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
                     need_update = True
                 else:
+                    print("WORSE")
                     curr_rank += 1
 
                 # Old mvp standing
@@ -139,6 +158,5 @@ def register_game_result(game_result: GameResult):
 
         # Perform bulk db operations
         RoundResult.objects.bulk_create(round_results_to_create)
-
         Round.objects.bulk_update(rounds_to_update, ["mvp"])
         Standing.objects.bulk_update(standings_to_update, ["updated", "mvp_count", "rank", "score"])
