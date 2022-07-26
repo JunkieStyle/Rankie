@@ -106,40 +106,24 @@ def register_game_result(game_result: GameResult):
             prev_rank = len(league.fetched_standings)
             curr_standing_score = scorer.get_standing_score(other_rounds_results + [curr_round_result])
 
-            print("ROUND")
-            print(curr_round)
-            print(prev_rank)
-
             for rank, standing in enumerate(league.fetched_standings, 1):
                 need_update = False
-                print("START")
-                print(rank)
-                print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
 
                 if standing.player == player:
-                    print("PLAYER")
                     if standing.rank:
                         prev_rank = rank
-                    print(prev_rank)
                     # Assume other_rounds_results are sorted by round label in queryset
                     standing.score = curr_standing_score
                     standing.rank = curr_rank
-                    print(standing.rank)
-                    print(mvp_needs_change)
                     if mvp_needs_change or curr_round.pk is None:
                         standing.mvp_count += 1
                         curr_round.save()
                     need_update = True
-                    print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
-                    print(curr_round.mvp)
 
                 elif curr_standing_score > standing.score and (curr_rank <= standing.rank < prev_rank):
-                    print("BETTER")
                     standing.rank += 1
-                    print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
                     need_update = True
                 else:
-                    print("WORSE")
                     curr_rank += 1
 
                 # Old mvp standing
