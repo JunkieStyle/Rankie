@@ -18,27 +18,32 @@ def league(db):
 
 
 def test_get_league_queryset_for_standings_update(django_user_model, db, django_assert_max_num_queries):
-    user = baker.make(django_user_model)
-    another_user = baker.make(django_user_model)
+    player = baker.make(django_user_model)
+    another_player = baker.make(django_user_model)
     game = baker.make(Game)
 
     rule = baker.make(GameRule, game=game, py_class="apps.rankie.scorers.ConstantLinearScorer")
     leagues = baker.make(League, rule=rule, start_dt=(timezone.now() - timedelta(days=1)), _quantity=2)
     for league in leagues:
-        league.players.add(user)
-        league.players.add(another_user)
+        league.players.add(player)
+        league.players.add(another_player)
         league.save()
+
         rounds = baker.make(Round, league=league, _quantity=5)
         for round in rounds:
-            baker.make(RoundResult, round=round, player=user)
-            baker.make(RoundResult, round=round, player=another_user)
+            baker.make(RoundResult, round=round, player=player)
+            baker.make(RoundResult, round=round, player=another_player)
+
+        # for testing correct order in fetched standings
+        Standing.objects.filter(player=another_player, league=league).update(score=1)
 
     with django_assert_max_num_queries(5):
-        active_leagues = get_league_queryset_for_standings_update(user, game)
+        active_leagues = get_league_queryset_for_standings_update(player, game)
         assert len(active_leagues) == 2
         for league in active_leagues:
             assert len(league.fetched_rounds) == 5
-            assert len(league.fetched_standings) == 1
+            assert len(league.fetched_standings) == 2
+            assert league.fetched_standings[-1].player == player
             for round in league.fetched_rounds:
                 assert len(round.fetched_round_results) == 2
 

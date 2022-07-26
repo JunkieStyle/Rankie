@@ -2,7 +2,7 @@ import logging
 
 from django.db import transaction
 from django.utils import timezone
-from django.db.models import Q, Prefetch, QuerySet
+from django.db.models import F, Q, Prefetch, QuerySet
 from django.contrib.auth import get_user_model
 
 from .models import Game, Round, League, Standing, GameResult, RoundResult
@@ -25,7 +25,7 @@ def get_league_queryset_for_standings_update(player: User, game: Game) -> QueryS
                 .prefetch_related(
                     Prefetch(
                         "round_results",
-                        RoundResult.objects.order_by("-score", "created"),
+                        RoundResult.objects.order_by(F("score").desc(nulls_last=True), "created"),
                         to_attr="fetched_round_results",
                     )
                 ),
@@ -34,7 +34,8 @@ def get_league_queryset_for_standings_update(player: User, game: Game) -> QueryS
             Prefetch(
                 "standings",
                 Standing.objects.filter(Q(player=player) | Q(score__isnull=False))
-                .order_by("-score", "created")
+                .order_by(F("score").desc(nulls_last=True), "created")
+                .select_related("player")
                 .select_for_update(no_key=True),
                 to_attr="fetched_standings",
             ),
@@ -105,40 +106,25 @@ def register_game_result(game_result: GameResult):
             prev_rank = len(league.fetched_standings)
             curr_standing_score = scorer.get_standing_score(other_rounds_results + [curr_round_result])
 
-            print("ROUND")
-            print(curr_round)
-            print(prev_rank)
-
             for rank, standing in enumerate(league.fetched_standings, 1):
                 need_update = False
-                print("START")
-                print(rank)
-                print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
 
                 if standing.player == player:
-                    print("PLAYER")
                     if standing.rank:
                         prev_rank = rank
-                    print(prev_rank)
+
                     # Assume other_rounds_results are sorted by round label in queryset
                     standing.score = curr_standing_score
                     standing.rank = curr_rank
-                    print(standing.rank)
-                    print(mvp_needs_change)
                     if mvp_needs_change or curr_round.pk is None:
                         standing.mvp_count += 1
                         curr_round.save()
                     need_update = True
-                    print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
-                    print(curr_round.mvp)
 
                 elif curr_standing_score > standing.score and (curr_rank <= standing.rank < prev_rank):
-                    print("BETTER")
                     standing.rank += 1
-                    print(standing.rank, standing.player, standing.league, standing.score, standing.mvp_count)
                     need_update = True
                 else:
-                    print("WORSE")
                     curr_rank += 1
 
                 # Old mvp standing
