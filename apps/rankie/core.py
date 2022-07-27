@@ -9,7 +9,7 @@ from .models import Game, Round, League, Standing, GameResult, RoundResult
 from .scorers import get_scorer
 
 User = get_user_model()
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 def get_league_queryset_for_standings_update(player: User, game: Game) -> QuerySet[League]:
