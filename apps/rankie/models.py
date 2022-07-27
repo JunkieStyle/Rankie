@@ -81,6 +81,7 @@ class League(models.Model):
     label = models.SlugField(max_length=32, unique=True)
     name = models.CharField(max_length=256, unique=True)
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="owned_leagues")
+    public = models.BooleanField(default=False)
     rule = models.ForeignKey(to=GameRule, on_delete=models.CASCADE)
     players = models.ManyToManyField(to=User, through="Standing")
     start_dt = models.DateTimeField()

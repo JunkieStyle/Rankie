@@ -34,7 +34,7 @@ class LeagueTable(tables.Table):
     class Meta:
         model = League
         template_name = "django_tables2/bootstrap4.html"
-        fields = ("id", "name", "owner", "start_dt", "end_dt")
+        fields = ("id", "name", "public", "owner", "start_dt", "end_dt")
 
 
 @method_decorator(login_required, name="dispatch")
