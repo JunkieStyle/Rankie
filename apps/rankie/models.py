@@ -141,6 +141,25 @@ class RoundResult(models.Model):
         return _(f"{self.player}'s result for {self.round}")
 
 
+class LeagueEvent(models.Model):
+    # noinspection PyPep8Naming
+    class EV_TYPE(models.TextChoices):  # noqa: N801
+        default = "default"
+
+    league = models.ForeignKey(to=League, on_delete=models.CASCADE)
+    ev_type = models.CharField(max_length=32, choices=EV_TYPE.choices)
+    context = models.JSONField(default=dict)
+
+    class Meta:
+        db_table = "league_event"
+        verbose_name = _("League event")
+        verbose_name_plural = _("League events")
+        default_related_name = "events"
+
+    def __str__(self):
+        return _(f"Event {self.id}")
+
+
 class Standing(models.Model):
     league = models.ForeignKey(to=League, on_delete=models.CASCADE)
     rank = models.PositiveIntegerField(null=True, blank=True)
