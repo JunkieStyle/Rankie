@@ -16,11 +16,9 @@ Including another URLconf
 from django.urls import path, include
 from django.contrib import admin
 
-from .views import index
-
 urlpatterns = [
-    path("", index),
     path("admin/", admin.site.urls),
     path("auth/", include("social_django.urls", namespace="social")),
-    path("api/", include("apps.rankie.urls", namespace="api")),
+    path("api/", include("apps.rankie.urls.api", namespace="api")),
+    path("", include("apps.rankie.urls.site", namespace="site")),
 ]

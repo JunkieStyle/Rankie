@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     "social_django",
     "apps.rankie.apps.RankieConfig",
     "rest_framework",
+    "django_tables2",
+    "bootstrap4",
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="pg-empty-placeholder"
+         style="width: 640px; left: 50%; margin-left: -320px; position: absolute;"></div>
+    <div style="position: relative; height: 192px; width: 264px; min-height: 192px; max-height: 192px; margin-left: -132px; left: 50%">
+        <img src="{% static 'hello_corgi.gif' %}" style="height: 100%;" alt="Corgi"/>
+    </div>
+    <div style="background-color: #aed0f9; position: relative; left: 50%; width: 300px; height: 144px; border-width: 5px; border-top-color: #000000; border-bottom-color: #000000; border-right-color: #000000; border-style: solid; border-top-right-radius: 30px; border-bottom-right-radius: 30px; border-top-left-radius: 30px; text-align: left; color: #000000; resize: none; margin-left: -150px; min-height: 175px">
+        <br/>
+        <p style="margin-left: 20px; margin-right: 10px; margin-top: -1px; font-family: 'Roboto', sans-serif; font-size: 25px;">
+            Hello{% if request.user.is_authenticated %}, {{ user.username }}{% endif %}!
+            <br>
+            My name is <b>Rankie!</b>
+        </p>
+
+        {% if request.user.is_authenticated %}
+            <p style="margin-left: 20px; margin-right: 10px; margin-top: -1px; font-family: 'Roboto', sans-serif; font-size: 25px;">
+                I am no ready yet 😢</p>
+        {% else %}
+            <div style="margin-left:20px">
+                <script async src="https://telegram.org/js/telegram-widget.js?19" data-telegram-login="RankieBot"
+                        data-size="medium"
+                        data-auth-url="{% url 'social:complete' 'telegram' %}"
+                        data-request-access="write">
+                </script>
+            </div>
+        {% endif %}
+    </div>
+    </div>
+{% endblock %}
