@@ -172,6 +172,8 @@ REST_FRAMEWORK = {
     ],
 }
 
+DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap4.html"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

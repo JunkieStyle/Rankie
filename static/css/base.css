@@ -9,3 +9,7 @@ footer {
     margin-top: auto;
     background-color: #e9ecef;
 }
+
+.jumbotron {
+    padding: 20px;
+}
