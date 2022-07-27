@@ -60,6 +60,9 @@ class GameResult(models.Model):
         unique_together = ("player", "game", "text")
         default_related_name = "game_results"
 
+    def __str__(self):
+        return _(f"{self.player}'s {self.game} result")
+
 
 class LeagueQuerySet(models.QuerySet):
     @property
@@ -116,7 +119,7 @@ class Round(models.Model):
         default_related_name = "rounds"
 
     def __str__(self):
-        return f"Round {self.label}"
+        return _(f"round {self.label} of {self.league}")
 
 
 class RoundResult(models.Model):
@@ -134,6 +137,9 @@ class RoundResult(models.Model):
         unique_together = ("round", "player")
         default_related_name = "round_results"
 
+    def __str__(self):
+        return _(f"{self.player}'s result for {self.round}")
+
 
 class Standing(models.Model):
     league = models.ForeignKey(to=League, on_delete=models.CASCADE)
@@ -150,3 +156,6 @@ class Standing(models.Model):
         verbose_name_plural = _("Standings")
         unique_together = ("player", "league")
         default_related_name = "standings"
+
+    def __str__(self):
+        return _(f"{self.player}'s standing in {self.league}")
