@@ -170,3 +170,4 @@ def register_game_result(game_result: GameResult):
         RoundResult.objects.bulk_create(round_results_to_create)
         Round.objects.bulk_update(rounds_to_update, ["mvp"])
         Standing.objects.bulk_update(standings_to_update, ["updated", "mvp_count", "rank", "score"])
+        LeagueEvent.objects.bulk_create(events_to_create)
