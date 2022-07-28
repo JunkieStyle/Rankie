@@ -61,7 +61,7 @@ class GameResult(models.Model):
         default_related_name = "game_results"
 
     def __str__(self):
-        return _(f"{self.player}'s {self.game} result")
+        return f"{self.player}'s {self.game} result"
 
 
 class LeagueQuerySet(models.QuerySet):
@@ -120,7 +120,7 @@ class Round(models.Model):
         default_related_name = "rounds"
 
     def __str__(self):
-        return _(f"round {self.label} of {self.league}")
+        return f"Round {self.label} of {self.league}"
 
 
 class RoundResult(models.Model):
@@ -139,7 +139,7 @@ class RoundResult(models.Model):
         default_related_name = "round_results"
 
     def __str__(self):
-        return _(f"{self.player}'s result for {self.round}")
+        return f"{self.player}'s round {self.round} result"
 
 
 class LeagueEvent(models.Model):
@@ -181,4 +181,4 @@ class Standing(models.Model):
         default_related_name = "standings"
 
     def __str__(self):
-        return _(f"{self.player}'s standing in {self.league}")
+        return f"{self.player}'s standing in league {self.league}"
