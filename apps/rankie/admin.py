@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import display
 
-from .models import Game, Round, League, GameRule, Standing, GameResult, RoundResult
+from .models import Game, Round, League, GameRule, Standing, GameResult, LeagueEvent, RoundResult
 
 
 @admin.register(Game)
@@ -33,6 +33,12 @@ class LeagueAdmin(admin.ModelAdmin):
     list_display_links = ("id", "label")
     list_display = ("id", "label", "name", "rule", "owner", "start_dt", "end_dt", "created", "updated")
     list_select_related = ["owner"]
+
+
+@admin.register(LeagueEvent)
+class LeagueEventAdmin(admin.ModelAdmin):
+    list_display = ("id", "league", "ev_type", "context")
+    list_select_related = ["league"]
 
 
 @admin.register(Round)

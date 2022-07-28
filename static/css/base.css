@@ -13,3 +13,7 @@ footer {
 .jumbotron {
     padding: 20px;
 }
+
+td.icon {
+    vertical-align: middle;
+}

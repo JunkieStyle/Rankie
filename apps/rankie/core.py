@@ -34,7 +34,7 @@ def get_league_queryset_for_standings_update(player: User, game: Game) -> QueryS
             Prefetch(
                 "standings",
                 Standing.objects.filter(Q(player=player) | Q(score__isnull=False))
-                .order_by(F("score").desc(nulls_last=True), "created")
+                .order_by(F("score").desc(nulls_last=True), "-mvp_count", "created")
                 .select_related("player")
                 .select_for_update(no_key=True),
                 to_attr="fetched_standings",

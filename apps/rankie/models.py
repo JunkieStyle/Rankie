@@ -145,20 +145,23 @@ class RoundResult(models.Model):
 class LeagueEvent(models.Model):
     # noinspection PyPep8Naming
     class EV_TYPE(models.TextChoices):  # noqa: N801
-        default = "default"
+        NEW_LEADER = "NEW_LEADER"
+        NEW_SCORE = "NEW_SCORE"
+        NEW_PLAYER = "NEW_PLAYER"
+        NEW_MVP = "NEW_MVP"
+        PLAYER_LEFT = "PLAYER_LEFT"
+        LEAGUE_FINISHED = "LEAGUE_FINISHED"
 
     league = models.ForeignKey(to=League, on_delete=models.CASCADE)
     ev_type = models.CharField(max_length=32, choices=EV_TYPE.choices)
     context = models.JSONField(default=dict)
+    created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "league_event"
         verbose_name = _("League event")
         verbose_name_plural = _("League events")
         default_related_name = "events"
-
-    def __str__(self):
-        return _(f"Event {self.id}")
 
 
 class Standing(models.Model):

@@ -1,3 +1,22 @@
 {% extends "base.html" %}
+{% load django_tables2 %}
 {% block header %}
+    <h1> {{ object.name }} </h1>
+    <span> Game: <b>{{ object.rule.game }}</b>, managed by <a href="https://t.me/{{ request.user.username }}">{{ request.user }}</a></span>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-7">
+            <h4><a href="#">Leaderboard</a></h4>
+            {% render_table tables.0 %}
+        </div>
+        <div class="offset-md-1 col-md-4">
+            <h4><a href="#">Rounds</a></h4>
+            {% render_table tables.2 %}
+        </div>
+    </div>
+    <br>
+    <h4><a href="#">Events</a></h4>
+    {% render_table tables.1 %}
 {% endblock %}
