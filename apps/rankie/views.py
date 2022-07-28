@@ -92,21 +92,21 @@ class LeagueRoundTable(tables.Table):
 
 class LeagueEventTable(tables.Table):
     EV_TYPE_MESSAGES = {
-        "NEW_LEADER": _("Wow, we have a new leader: <span class='text-primary'>{player}</span> has taken a lead!"),
+        "NEW_LEADER": _("Wow, we have a new leader: <span class='text-primary'>@{username}</span> has taken a lead!"),
         "NEW_SCORE": _(
-            """Registered new score, <span class='text-primary'>{player}</span> earned
-            <span class='text-info'>{score}</span> points for <span class='text-info'>round {round}</span>."""
+            """Registered new score, <span class='text-primary'>@{username}</span> earned
+            <span class='text-info'>{score}</span> points for <span class='text-info'>round {round_label}</span>."""
         ),
-        "NEW_PLAYER": _("New player has joined the league, <span class='text-primary'>{player}</span> welcome!"),
+        "NEW_PLAYER": _("New player has joined the league, <span class='text-primary'>@{username}</span> welcome!"),
         "NEW_MVP": _(
-            """Wow! <span class='text-primary'>{player}</span> has stolen <span class='text-info'>round {round}</span>'s
-             MVP from <span class='text-primary'>{player}</span>!"""
+            """Wow! <span class='text-primary'>@{username}</span> earned MVP
+            for <span class='text-info'>round {round_label}</span>'!"""
         ),
         "PLAYER_LEFT": _(
-            "Unfortunately, <span class='text-primary'>{player}</span> has left the league, we will miss you!"
+            "Unfortunately, <span class='text-primary'>@{username}</span> has left the league, we will miss you!"
         ),
         "LEAGUE_FINISHED": _(
-            "League has finished! Congratulations to the winner: <span class='text-primary'>{player}</span>!"
+            "League has finished! Congratulations to the winner: <span class='text-primary'>@{username}</span>!"
         ),
     }
     EV_TYPE_ICONS = {

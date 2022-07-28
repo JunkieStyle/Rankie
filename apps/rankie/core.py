@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db.models import F, Q, Prefetch, QuerySet
 from django.contrib.auth import get_user_model
 
-from .models import Game, Round, League, Standing, GameResult, RoundResult
+from .models import Game, Round, League, Standing, GameResult, LeagueEvent, RoundResult
 from .scorers import get_scorer
 
 User = get_user_model()
@@ -53,11 +53,12 @@ def register_game_result(game_result: GameResult):
     standings_to_update = []
     rounds_to_update = []
     round_results_to_create = []
+    events_to_create = []
 
     with transaction.atomic():
         for league in active_leagues:
             scorer = get_scorer(league)
-            round_label = scorer.get_round_label(game_result)
+            curr_round_label = scorer.get_round_label(game_result)
 
             # Find/create corresponding Round and RoundResult
             curr_round = None
@@ -67,7 +68,7 @@ def register_game_result(game_result: GameResult):
             other_rounds_results = []
 
             for fetched_round in league.fetched_rounds:
-                if fetched_round.label == round_label:
+                if fetched_round.label == curr_round_label:
                     curr_round = fetched_round
 
                 for fetched_result in fetched_round.fetched_round_results:
@@ -80,13 +81,19 @@ def register_game_result(game_result: GameResult):
                         curr_round_other_results.append(fetched_result)
 
             if curr_round is None:
-                curr_round = Round(league=league, label=round_label, mvp=player)
+                curr_round = Round(league=league, label=curr_round_label, mvp=player)
 
             if curr_round_result is None:
-                curr_round_result = RoundResult(
-                    round=curr_round, player=player, score=scorer.get_round_score(game_result), raw=game_result
-                )
+                curr_score = scorer.get_round_score(game_result)
+                curr_round_result = RoundResult(round=curr_round, player=player, score=curr_score, raw=game_result)
                 round_results_to_create.append(curr_round_result)
+                events_to_create.append(
+                    LeagueEvent(
+                        league=league,
+                        ev_type=LeagueEvent.EV_TYPE.NEW_SCORE,
+                        context={"username": player.username, "score": curr_score, "round_label": curr_round_label},
+                    )
+                )
 
             else:
                 # This league is updated
@@ -99,6 +106,15 @@ def register_game_result(game_result: GameResult):
                 and len(curr_round_other_results) > 0
                 and curr_round_result.score > curr_round_other_results[0].score
             )
+
+            if mvp_needs_change:
+                events_to_create.append(
+                    LeagueEvent(
+                        league=league,
+                        ev_type=LeagueEvent.EV_TYPE.NEW_MVP,
+                        context={"username": player.username, "round_label": curr_round_label},
+                    )
+                )
 
             # Change standings
             # Assume standings are sorted and filtered in queryset (all have scores or from current player)
@@ -119,6 +135,15 @@ def register_game_result(game_result: GameResult):
                         standing.mvp_count += 1
                         curr_round.save()
                     need_update = True
+
+                    if curr_rank == 1:
+                        events_to_create.append(
+                            LeagueEvent(
+                                league=league,
+                                ev_type=LeagueEvent.EV_TYPE.NEW_LEADER,
+                                context={"username": player.username},
+                            )
+                        )
 
                 elif curr_standing_score > standing.score and (curr_rank <= standing.rank < prev_rank):
                     standing.rank += 1
