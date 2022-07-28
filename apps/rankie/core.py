@@ -107,15 +107,6 @@ def register_game_result(game_result: GameResult):
                 and curr_round_result.score > curr_round_other_results[0].score
             )
 
-            if mvp_needs_change:
-                events_to_create.append(
-                    LeagueEvent(
-                        league=league,
-                        ev_type=LeagueEvent.EV_TYPE.NEW_MVP,
-                        context={"username": player.username, "round_label": curr_round_label},
-                    )
-                )
-
             # Change standings
             # Assume standings are sorted and filtered in queryset (all have scores or from current player)
             curr_rank = 1
@@ -134,6 +125,14 @@ def register_game_result(game_result: GameResult):
                     if mvp_needs_change or curr_round.pk is None:
                         standing.mvp_count += 1
                         curr_round.save()
+                        events_to_create.append(
+                            LeagueEvent(
+                                league=league,
+                                ev_type=LeagueEvent.EV_TYPE.NEW_MVP,
+                                context={"username": player.username, "round_label": curr_round_label},
+                            )
+                        )
+
                     need_update = True
 
                     if curr_rank == 1:
