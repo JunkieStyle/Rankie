@@ -92,15 +92,15 @@ class LeagueRoundTable(tables.Table):
 
 class LeagueEventTable(tables.Table):
     EV_TYPE_MESSAGES = {
-        "NEW_LEADER": _("Wow, we have a new leader: <span class='text-primary'>@{username}</span> has taken a lead!"),
+        "NEW_LEADER": _("Wow! We have a new leader, <span class='text-primary'>@{username}</span> has taken a lead!"),
         "NEW_SCORE": _(
             """Registered new score, <span class='text-primary'>@{username}</span> earned
-            <span class='text-info'>{score}</span> points for <span class='text-info'>round {round_label}</span>."""
+            <span class='text-info'>{score}</span> point(s) for <span class='text-info'>round {round_label}</span>."""
         ),
         "NEW_PLAYER": _("New player has joined the league, <span class='text-primary'>@{username}</span> welcome!"),
         "NEW_MVP": _(
             """Wow! <span class='text-primary'>@{username}</span> earned MVP
-            for <span class='text-info'>round {round_label}</span>'!"""
+            for <span class='text-info'>round {round_label}</span>!"""
         ),
         "PLAYER_LEFT": _(
             "Unfortunately, <span class='text-primary'>@{username}</span> has left the league, we will miss you!"

@@ -117,6 +117,7 @@ def register_game_result(game_result: GameResult):
                 need_update = False
 
                 if standing.player == player:
+                    need_update = True
                     if standing.rank:
                         prev_rank = rank
                     # Assume other_rounds_results are sorted by round label in queryset
@@ -132,10 +133,7 @@ def register_game_result(game_result: GameResult):
                                 context={"username": player.username, "round_label": curr_round_label},
                             )
                         )
-
-                    need_update = True
-
-                    if curr_rank == 1:
+                    if curr_rank == 1 and prev_rank != 1:
                         events_to_create.append(
                             LeagueEvent(
                                 league=league,
