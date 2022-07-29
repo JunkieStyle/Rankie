@@ -2,7 +2,16 @@
 {% load django_tables2 %}
 {% block header %}
     <h1> {{ object.name }} </h1>
-    <span> Game: <b>{{ object.rule.game }}</b>, managed by <a href="https://t.me/{{ object.owner.username }}">{{ object.owner }}</a></span>
+    <span> Game: <b>{{ object.rule.game }}</b>, managed by <a
+            href="https://t.me/{{ object.owner.username }}">{{ object.owner }}</a></span>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'site:home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'site:league-list' %}">Leagues</a></li>
+        <li class="breadcrumb-item active"><a href="{% url 'site:league-detail' object.label %}">{{ object.name }}</a></li>
+    </ol>
 {% endblock %}
 
 {% block content %}

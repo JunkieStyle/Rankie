@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active"><a href="{% url 'site:home' %}">Home</a></li>
+    </ol>
+{% endblock %}
+
 {% block content %}
     <div class="pg-empty-placeholder"
          style="width: 640px; left: 50%; margin-left: -320px; position: absolute;"></div>
