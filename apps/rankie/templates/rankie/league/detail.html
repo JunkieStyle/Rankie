@@ -2,7 +2,7 @@
 {% load django_tables2 %}
 {% block header %}
     <h1> {{ object.name }} </h1>
-    <span> Game: <b>{{ object.rule.game }}</b>, managed by <a href="https://t.me/{{ request.user.username }}">{{ request.user }}</a></span>
+    <span> Game: <b>{{ object.rule.game }}</b>, managed by <a href="https://t.me/{{ object.owner.username }}">{{ object.owner }}</a></span>
 {% endblock %}
 
 {% block content %}
