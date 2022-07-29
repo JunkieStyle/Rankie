@@ -36,28 +36,23 @@ class GameResultViewSet(viewsets.ModelViewSet):
 
 # noinspection PyMethodMayBeStatic
 class LeagueTable(tables.Table):
-    joined = tables.BooleanColumn()
-    active = tables.BooleanColumn()
+    game = tables.Column()
 
     class Meta:
         model = League
-        fields = ("id", "name", "public", "joined", "active", "owner")
+        fields = ("id", "name", "game")
 
     def render_name(self, record, value):
         return format_html("<a href='{}'>{}</a>", reverse("site:league-detail", args=[record.label]), value)
 
-    def render_active(self, record, column, bound_column):
-        return column.render(record.is_active(), record, bound_column)
-
-    def render_joined(self, record, column, bound_column):
-        value = self.request.user in record.players.all()
-        return column.render(value, record, bound_column)
+    def render_game(self, record):
+        return format_html("<a href=#>{}</a>", record.rule.game)
 
 
 @method_decorator(login_required, name="dispatch")
 class LeagueListView(tables.SingleTableMixin, FilterView):
     table_class = LeagueTable
-    queryset = League.objects.prefetch_related("players").order_by("-created")
+    queryset = League.objects.select_related("rule__game").prefetch_related("players").order_by("-created")
     filterset_class = LeagueFilter
     template_name = "rankie/league/list.html"
     table_pagination = {"per_page": 10}
