@@ -2,7 +2,7 @@ import django_tables2 as tables
 
 from django.urls import reverse
 from rest_framework import status, viewsets
-from django.db.models import Q, Prefetch
+from django.db.models import F, Q, Prefetch
 from django.shortcuts import render
 from django.utils.html import format_html
 from django.views.generic import DetailView
@@ -36,7 +36,7 @@ class GameResultViewSet(viewsets.ModelViewSet):
 
 # noinspection PyMethodMayBeStatic
 class LeagueTable(tables.Table):
-    game = tables.Column()
+    game = tables.Column(empty_values=())
 
     class Meta:
         model = League
@@ -46,7 +46,7 @@ class LeagueTable(tables.Table):
         return format_html("<a href='{}'>{}</a>", reverse("site:league-detail", args=[record.label]), value)
 
     def render_game(self, record):
-        return format_html("<a href=#>{}</a>", record.rule.game)
+        return record.rule.game
 
 
 @method_decorator(login_required, name="dispatch")
@@ -74,15 +74,20 @@ class LeagueStandingTable(tables.Table):
 # noinspection PyMethodMayBeStatic
 class LeagueRoundTable(tables.Table):
     mvp = tables.Column(verbose_name="MVP")
-    top = tables.Column(empty_values=())
+    score = tables.Column(empty_values=())
 
     class Meta:
         model = Round
-        fields = ("label", "mvp", "top")
+        fields = ("label", "mvp", "score")
         orderable = False
 
-    def render_top(self, record):
+    def render_score(self, record):
         return record.mvp_results[0].score
+
+    def render_label(self, record, value):
+        return format_html(
+            "<a href='{}'>{}</a>", reverse("site:league-round", args=(record.league.label, value)), value
+        )
 
 
 class LeagueEventTable(tables.Table):
@@ -148,7 +153,7 @@ class LeagueDetailedView(tables.MultiTableMixin, DetailView):
                 Standing.objects.filter(league=league)
                 .filter(Q(rank__in=[1, 2, 3]) | Q(player=self.request.user))
                 .select_related("player")
-                .order_by("rank")
+                .order_by(F("rank").asc(nulls_last=True))
             ),
             LeagueEventTable(LeagueEvent.objects.filter(league=league).order_by("-created")[:5]),
             LeagueRoundTable(
@@ -160,3 +165,99 @@ class LeagueDetailedView(tables.MultiTableMixin, DetailView):
                 .order_by("-label")[:4]
             ),
         ]
+
+
+@method_decorator(login_required, name="dispatch")
+class LeagueStandingsView(tables.SingleTableMixin, DetailView):
+    template_name = "rankie/league/standings.html"
+    model = League
+    slug_field = "label"
+    slug_url_kwarg = "label"
+    table_class = LeagueStandingTable
+    table_pagination = {"per_page": 10}
+
+    def get_table_data(self):
+        league = self.get_object()
+        return league.standings.select_related("player").order_by(F("rank").asc(nulls_last=True))
+
+
+@method_decorator(login_required, name="dispatch")
+class LeagueRoundsView(tables.SingleTableMixin, DetailView):
+    template_name = "rankie/league/rounds.html"
+    model = League
+    slug_field = "label"
+    slug_url_kwarg = "label"
+    table_class = LeagueRoundTable
+    table_pagination = {"per_page": 10}
+
+    def get_table_data(self):
+        league = self.get_object()
+        return (
+            league.rounds.select_related("mvp")
+            .prefetch_related(Prefetch("round_results", RoundResult.objects.order_by("-score"), to_attr="mvp_results"))
+            .order_by("-label")
+        )
+
+
+# noinspection PyMethodMayBeStatic
+class RoundResultTable(tables.Table):
+    class Meta:
+        model = RoundResult
+        fields = ("player", "score", "created")
+        orderable = False
+
+
+class LeagueRoundResultsView(tables.SingleTableMixin, DetailView):
+    template_name = "rankie/league/round.html"
+    model = League
+    slug_field = "label"
+    slug_url_kwarg = "label"
+    table_class = RoundResultTable
+    table_pagination = {"per_page": 10}
+
+    def get_table_data(self):
+        return RoundResult.objects.filter(
+            round__league=self.object, round__label=self.kwargs.get("round_label")
+        ).order_by("-score")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["round_label"] = self.kwargs.get("round_label")
+        return context
+
+
+@method_decorator(login_required, name="dispatch")
+class LeagueEventsView(tables.SingleTableMixin, DetailView):
+    template_name = "rankie/league/events.html"
+    model = League
+    slug_field = "label"
+    slug_url_kwarg = "label"
+    table_class = LeagueEventTable
+    table_pagination = {"per_page": 10}
+
+    def get_table_data(self):
+        league = self.get_object()
+        return league.events.order_by("-created")
+
+
+@method_decorator(login_required, name="dispatch")
+class JoinLeagueView(LeagueDetailedView):
+    def get_object(self, **kwargs):
+        obj = super().get_object()
+        obj.players.add(self.request.user)
+        obj.save()
+        return obj
+
+
+@method_decorator(login_required, name="dispatch")
+class LeaveLeagueView(LeagueDetailedView):
+    def get_object(self, **kwargs):
+        obj = super().get_object()
+        obj.players.remove(self.request.user)
+        obj.save()
+        return obj
+
+
+@method_decorator(login_required, name="dispatch")
+class EditLeagueView(LeagueDetailedView):
+    pass

@@ -1,31 +1,37 @@
 {% extends "base.html" %}
 {% load django_tables2 %}
 {% block header %}
-    <h1> {{ object.name }} </h1>
-    <span> Game: <b>{{ object.rule.game }}</b>, managed by <a
-            href="https://t.me/{{ object.owner.username }}">{{ object.owner }}</a></span>
+    <div class="jumbotron text-center" style="margin-bottom:0">
+        <h1> {{ object.name }} </h1>
+        <span> Game: <b>{{ object.rule.game }}</b>, managed by <a
+                href="https://t.me/{{ object.owner.username }}">{{ object.owner }}</a></span>
+    </div>
 {% endblock %}
 
-{% block breadcrumbs %}
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'site:home' %}">Home</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'site:league-list' %}">Leagues</a></li>
-        <li class="breadcrumb-item active"><a href="{% url 'site:league-detail' object.label %}">{{ object.name }}</a></li>
-    </ol>
-{% endblock %}
 
 {% block content %}
     <div class="row">
         <div class="col-md-7">
-            <h4><a href="#">Leaderboard</a></h4>
+            <h4><a href="{% url 'site:league-standings' object.label %}">Leaderboard</a></h4>
             {% render_table tables.0 %}
+
         </div>
         <div class="offset-md-1 col-md-4">
-            <h4><a href="#">Rounds</a></h4>
+            <h4><a href="{% url 'site:league-rounds' object.label %}">Rounds</a></h4>
             {% render_table tables.2 %}
         </div>
     </div>
     <br>
-    <h4><a href="#">Events</a></h4>
+    <h4><a href="{% url 'site:league-events' object.label %}">Events</a></h4>
     {% render_table tables.1 %}
+    <p style="text-align: right">
+        {% if request.user == object.owner %}
+            <a href="{% url "site:league-edit"  object.label %}" class="btn btn-primary">Edit</a>
+        {% endif %}
+        {% if request.user in object.players.all %}
+            <a href="{% url "site:league-leave" object.label %}" class="btn btn-danger">Leave</a>
+        {% else %}
+            <a href="{% url "site:league-join" object.label %}" class="btn btn-success">Join</a>
+        {% endif %}
+    </p>
 {% endblock %}

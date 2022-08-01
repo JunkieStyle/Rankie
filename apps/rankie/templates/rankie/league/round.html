@@ -1,0 +1,10 @@
+{% extends "rankie/league/detail.html" %}
+{% load django_tables2 %}
+
+{% block content %}
+    <h4>Round {{ round_label }}</h4>
+    {% render_table table %}
+    <p style="text-align: right">
+        <a href="{% url "site:league-detail"  object.label %}" class="btn btn-primary">Go Back</a>
+    </p>
+{% endblock %}
