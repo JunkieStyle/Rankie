@@ -26,7 +26,7 @@ def get_scorer(obj) -> "BaseScorer":
 
 class BaseScorer(ABC):
     def __init__(self, round_label_re_pattern):
-        self.pattern = re.compile(round_label_re_pattern)
+        self.label_pattern = re.compile(round_label_re_pattern)
 
     @abstractmethod
     def get_round_score(self, result: GameResult) -> float:
@@ -37,7 +37,7 @@ class BaseScorer(ABC):
         raise NotImplementedError
 
     def get_round_label(self, result: GameResult) -> int:
-        match = self.pattern.search(result.text)
+        match = self.label_pattern.search(result.text)
         return match.groups()[0]
 
 
@@ -50,6 +50,19 @@ class ConstantLinearScorer(BaseScorer):
 
     def get_round_score(self, result: GameResult) -> float:
         return self.round_score
+
+    def get_standing_score(self, results: Iterable[RoundResult]) -> float:
+        return sum(result.score for result in results)
+
+
+class LinearScorer(BaseScorer):
+    def __init__(self, round_score_re_pattern, round_label_re_pattern):
+        super().__init__(round_label_re_pattern)
+        self.score_pattern = re.compile(round_score_re_pattern)
+
+    def get_round_score(self, result: GameResult) -> float:
+        match = self.score_pattern.search(result.text)
+        return float(match.groups()[0])
 
     def get_standing_score(self, results: Iterable[RoundResult]) -> float:
         return sum(result.score for result in results)
