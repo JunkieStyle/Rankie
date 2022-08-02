@@ -66,7 +66,7 @@ class GameRule(models.Model):
     name = models.CharField(max_length=128)
     game = models.ForeignKey(to=Game, on_delete=models.CASCADE)
     py_class = models.CharField(max_length=256)
-    py_kwargs = models.JSONField(default=dict)  # TODO: add validation for only dicts
+    py_kwargs = models.JSONField(default=dict, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
