@@ -54,10 +54,10 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     game_result_id = response.json()["id"]
-    register_url = urljoin(RANKIE_GAME_RESULTS_URL, game_result_id + "/register/")
+    register_url = urljoin(RANKIE_GAME_RESULTS_URL, str(game_result_id) + "/register/")
     response = requests.get(register_url)
 
-    if response.status_code != 201:
+    if response.status_code != 200:
         logger.error(f"Status code: {response.status_code}, Text: {response.text}")
         reason = "API error"
         await context.bot.send_message(chat_id=chat_id, text=f"Failed to register game result: {reason}")
