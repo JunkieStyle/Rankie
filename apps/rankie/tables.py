@@ -29,6 +29,9 @@ class LeagueStandingTable(tables.Table):
         fields = ("rank", "player", "score", "mvp_count")
         orderable = False
 
+    def render_score(self, value):
+        return round(value, 3)
+
     def render_mvp_count(self, value):
         return format_html('{} <i class="fa-solid fa-star text-warning fa-md"></i>', value)
 
@@ -43,7 +46,7 @@ class LeagueRoundTable(tables.Table):
         orderable = False
 
     def render_score(self, record):
-        return record.mvp_results[0].score
+        return round(record.mvp_results[0].score, 3)
 
     def render_label(self, record, value):
         return format_html(
