@@ -38,7 +38,7 @@ class BaseScorer(ABC):
         groups = match.groupdict()
         for group in Game.RE_GROUPS:
             if group not in groups:
-                raise KeyError(f"Missing group '{group}' from parsed game result with")
+                raise KeyError(f"Missing group '{group}' from parsed game result.")
         return groups
 
     def get_standing_score(self, results: Iterable[RoundResult]) -> float:
