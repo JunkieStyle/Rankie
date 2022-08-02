@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_league_queryset_for_standings_update(player: User, game: Game) -> QuerySet[League]:
+    """Get active leagues for given user and game;
+
+    This method mainly used for registering player's results. We fetch all the necessary related objects at once to
+    minimize the number of database interactions/queries. All sort operations here are important.
+    """
+
     return (
         player.leagues.active()
         .filter(rule__game=game)

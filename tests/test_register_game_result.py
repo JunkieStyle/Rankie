@@ -11,8 +11,8 @@ from apps.rankie.models import Game, Round, League, GameRule, Standing, GameResu
 
 @pytest.fixture
 def league(db):
-    game = baker.make(Game)
-    rule = baker.make(GameRule, game=game, py_class="apps.rankie.scorers.ConstantLinearScorer")
+    game = baker.make(Game, parser_regex=r"(?P<game>\w+) (?P<round>[0-9]+) (?P<score>[\s\S]*)")
+    rule = baker.make(GameRule, game=game, py_class="apps.rankie.scorers.SimpleScorer", py_kwargs={})
     league = baker.make(League, rule=rule, start_dt=(timezone.now() - timedelta(days=1)))
     return league
 
@@ -22,7 +22,7 @@ def test_get_league_queryset_for_standings_update(django_user_model, db, django_
     another_player = baker.make(django_user_model)
     game = baker.make(Game)
 
-    rule = baker.make(GameRule, game=game, py_class="apps.rankie.scorers.ConstantLinearScorer")
+    rule = baker.make(GameRule, game=game, py_class="apps.rankie.scorers.SimpleScorer")
     leagues = baker.make(League, rule=rule, start_dt=(timezone.now() - timedelta(days=1)), _quantity=2)
     for league in leagues:
         league.players.add(player)
@@ -68,8 +68,10 @@ def test_register_single_player_single_result(db, django_user_model, league):
     league.players.add(player)
     league.save()
 
-    round_label = "label"
-    game_result = baker.make(GameResult, player=player, game=game, text=round_label)
+    round_label = "1"
+    round_score = "1"
+    round_text = f"game {round_label} {round_score}"
+    game_result = baker.make(GameResult, player=player, game=game, text=round_text)
 
     # no registered result
     assert Round.objects.filter(league=league).count() == 0
@@ -101,11 +103,15 @@ def test_register_single_player_multi_results(db, django_user_model, league):
     league.save()
 
     round_label1 = "1"
-    game_result1 = baker.make(GameResult, player=player, game=league.rule.game, text=round_label1)
+    round_score1 = "1"
+    round_text1 = f"game {round_label1} {round_score1}"
+    game_result1 = baker.make(GameResult, player=player, game=league.rule.game, text=round_text1)
     register_game_result(game_result1)
 
     round_label2 = "2"
-    game_result2 = baker.make(GameResult, player=player, game=league.rule.game, text=round_label2)
+    round_score2 = "2"
+    round_text2 = f"game {round_label2} {round_score2}"
+    game_result2 = baker.make(GameResult, player=player, game=league.rule.game, text=round_text2)
     register_game_result(game_result2)
 
     standing = Standing.objects.get(player=player, league=league)
@@ -120,8 +126,10 @@ def test_register_multi_player_single_results(db, django_user_model, league):
     league.save()
 
     round_label = "1"
-    game_result1 = baker.make(GameResult, player=player1, game=league.rule.game, text=round_label)
-    game_result2 = baker.make(GameResult, player=player2, game=league.rule.game, text=round_label)
+    round_score = "1"
+    round_text = f"game {round_label} {round_score}"
+    game_result1 = baker.make(GameResult, player=player1, game=league.rule.game, text=round_text)
+    game_result2 = baker.make(GameResult, player=player2, game=league.rule.game, text=round_text)
 
     register_game_result(game_result1)
     register_game_result(game_result2)
@@ -141,7 +149,7 @@ def test_register_same_score_diff_rounds(db, django_user_model, league):
 
     round_labels = [str(i) for i in range(0, 4)]
     game_results = [
-        baker.make(GameResult, player=player, game=league.rule.game, text=round_label)
+        baker.make(GameResult, player=player, game=league.rule.game, text=f"game {round_label} 1")
         for round_label, player in zip(round_labels, players)
     ]
 
@@ -163,7 +171,7 @@ def test_register_multi_player_multi_results(db, django_user_model, league):
 
     round_labels = [str(i) for i in range(0, 3)]
     game_results = [
-        [baker.make(GameResult, player=player, game=league.rule.game, text=round_label) for player in players]
+        [baker.make(GameResult, player=player, game=league.rule.game, text=f"g {round_label} 1") for player in players]
         for round_label in round_labels
     ]
 

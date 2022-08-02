@@ -1,16 +1,55 @@
+import re
+
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
 
+@deconstructible
+class GameParserValidator:
+    def __init__(self, required_groups=None):
+        self.required_groups = required_groups if required_groups else []
+
+    def __call__(self, value):
+        self.validate_is_regex(value)
+        self.validate_regex_groups(value)
+
+    @staticmethod
+    def validate_is_regex(value):
+        try:
+            re.compile(value)
+        except Exception:
+            raise ValidationError(
+                _("%(value)s is not a valid regular expression"),
+                params={"value": value},
+            )
+
+    def validate_regex_groups(self, value):
+        pattern = re.compile(value)
+        for group in self.required_groups:
+            if group not in pattern.groupindex:
+                raise ValidationError(
+                    _('%(value)s doesnt contain required group named "${group}"'),
+                    params={"value": value, "group": group},
+                )
+
+
 class Game(models.Model):
+    RE_GAME_GROUP = "game"
+    RE_ROUND_GROUP = "round"
+    RE_SCORE_GROUP = "score"
+    RE_GROUPS = [RE_GAME_GROUP, RE_ROUND_GROUP, RE_SCORE_GROUP]
+
     label = models.SlugField(max_length=32, unique=True)
     name = models.CharField(max_length=128, unique=True)
     url = models.URLField()
+    parser_regex = models.TextField(validators=[GameParserValidator(RE_GROUPS)])
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
