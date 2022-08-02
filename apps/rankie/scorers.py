@@ -92,14 +92,14 @@ class ExpressionScorer(BaseScorer):
             return self.not_numeric_default
 
     def _eval_expr(self, expr):
-        return self.eval_(ast.parse(expr, mode="eval").body)
+        return self._eval(ast.parse(expr, mode="eval").body)
 
-    def eval_(self, node):
+    def _eval(self, node):
         if isinstance(node, ast.Num):
             return node.n
         elif isinstance(node, ast.BinOp):
-            return self.OPERATORS[type(node.op)](self.eval_(node.left), self.eval_(node.right))
+            return self.OPERATORS[type(node.op)](self._eval(node.left), self._eval(node.right))
         elif isinstance(node, ast.UnaryOp):
-            return self.OPERATORS[type(node.op)](self.eval_(node.operand))
+            return self.OPERATORS[type(node.op)](self._eval(node.operand))
         else:
             raise TypeError(node)
