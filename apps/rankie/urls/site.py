@@ -17,4 +17,5 @@ urlpatterns = [
     path("leagues/<slug:label>/leave/", views.LeaveLeagueView.as_view(), name="league-leave"),
     path("leagues/<slug:label>/join/", views.JoinLeagueView.as_view(), name="league-join"),
     path("leagues/<slug:label>/edit/", views.EditLeagueView.as_view(), name="league-edit"),
+    path("leagues/<slug:label>/refresh/", views.EditLeagueView.as_view(), name="league-refresh"),
 ]

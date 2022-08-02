@@ -173,5 +173,12 @@ class LeaveLeagueView(LeagueDetailedView):
 
 
 @method_decorator(login_required, name="dispatch")
+class RefreshLeagueView(LeagueDetailedView):
+    def get_object(self, **kwargs):
+        obj = super().get_object()
+        return obj
+
+
+@method_decorator(login_required, name="dispatch")
 class EditLeagueView(LeagueDetailedView):
     pass

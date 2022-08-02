@@ -30,8 +30,10 @@
         {% endif %}
         {% if request.user in object.players.all %}
             <a href="{% url "site:league-leave" object.label %}" class="btn btn-danger">Leave</a>
+            <a href="{% url "site:league-refresh" object.label %}" class="btn btn-info">Refresh</a>
         {% else %}
             <a href="{% url "site:league-join" object.label %}" class="btn btn-success">Join</a>
+
         {% endif %}
     </p>
 {% endblock %}
