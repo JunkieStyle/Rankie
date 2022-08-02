@@ -1,6 +1,8 @@
 import os
 import logging
 
+from urllib.parse import urljoin
+
 import requests
 
 from telegram import Update
@@ -42,17 +44,26 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = {"player": username, "game": game_label, "origin": "TG_BOT", "text": message}
     response = requests.post(RANKIE_GAME_RESULTS_URL, json=data)
 
-    if response.status_code == 201:
-        await context.bot.send_message(chat_id=chat_id, text=f"Result successfully sent, game '{game_label}'")
-    else:
+    if response.status_code != 201:
         logger.error(f"Status code: {response.status_code}, Text: {response.text}")
         reason = "API error"
         if response.text and "must make a unique set" in response.text:
             reason = "already registered"
 
-        await context.bot.send_message(
-            chat_id=chat_id, text=f"Failed to register result for game '{game_label}': {reason}"
-        )
+        await context.bot.send_message(chat_id=chat_id, text=f"Failed to send game result: {reason}")
+        return
+
+    game_result_id = response.json()["id"]
+    register_url = urljoin(RANKIE_GAME_RESULTS_URL, game_result_id + "/register/")
+    response = requests.get(register_url)
+
+    if response.status_code != 201:
+        logger.error(f"Status code: {response.status_code}, Text: {response.text}")
+        reason = "API error"
+        await context.bot.send_message(chat_id=chat_id, text=f"Failed to register game result: {reason}")
+        return
+
+    await context.bot.send_message(chat_id=chat_id, text="Game result was successfully sent and registered")
 
 
 def main():
