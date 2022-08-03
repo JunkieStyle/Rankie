@@ -37,6 +37,8 @@ async def send_game_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
         game_label = "wordle_ru"
     elif message.startswith("Reversle"):
         game_label = "reversle_eng"
+    elif message.startswith("nerdlegame"):
+        game_label = "nerdle"
     else:
         await context.bot.send_message(chat_id=chat_id, text="Sorry, I can't guess the game name")
         return
